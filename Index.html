@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+            <title>COVID-19 ARG</title>
+        <meta name="viewport" content="width=device-width">
+        <style>
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #fffaf7;
+            line-height: 1.3;
+        }
+        main {
+            max-width: 70ch;
+            padding: 2ch;
+            margin: auto;
+        }
+        a {
+          color: #0072BB;
+          text-decoration: none;
+          outline: 0;
+        }
+        h1 {
+            margin-bottom: .5rem;
+            font-size: 3rem;
+            letter-spacing: 0.2rem;
+            text-align:center;
+            color: #0072BB;
+        }
+        footer {
+            margin-top: 2rem;
+            text-align: center;
+            font-size: 2rem;
+        } 
+        
+        footer p{
+            font-size: 1rem;
+            color: #888888;
+        }
+        </style>
+    </head>
+    <body>
+        <main>
+            <article>
+                <header>
+                    <h1>Covid-19 ARG</h1>
+                    <p>Ultima Actualización: <time datetime="20200316">16/03/2020</time></p>
+                </header>
+                <body>
+                    <div id='chart'></div>
+                    <hr/>
+                </body>
+                <footer>
+                <p>Información extraida del <a href="https://www.argentina.gob.ar/coronavirus/informe-diario">Ministerio de Salud de la Nación</a></p>
+                    🦠
+                </footer>
+            </article>
+        </main>
+    </body>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script>
+        var options = {
+        colors:['#FC5D19', '#FF0000'],
+        xaxis: {
+          categories: ["05/03","06/03","08/03","09/03","10/03","11/03","12/03","13/03","14/03","15/03","16/03"],
+          position: 'bottom',
+          axisBorder: {
+            show: false
+          },
+          axisTicks: {
+            show: false
+          },
+          tooltip: {
+            enabled: true,
+          }
+        },
+          series: [{
+          name: 'Casos',
+          data: [
+        {x: "05/03", y: 1},
+        {x: "06/03", y: 2},
+        {x: "08/03", y: 12},
+        {x: "09/03", y: 17},
+        {x: "10/03", y: 19},
+        {x: "11/03", y: 21},
+        {x: "12/03", y: 31},
+        {x: "13/03", y: 34},
+        {x: "14/03", y: 45},
+        {x: "15/03", y: 56},
+        {x: "16/03", y: 65}]
+        },{name: 'Decesos',
+          data: [
+        {x: "05/03", y: 0},
+        {x: "06/03", y: 0},
+        {x: "08/03", y: 0},
+        {x: "09/03", y: 1},
+        {x: "10/03", y: 1},
+        {x: "11/03", y: 1},
+        {x: "12/03", y: 1},
+        {x: "13/03", y: 2},
+        {x: "14/03", y: 2},
+        {x: "15/03", y: 2},
+        {x: "16/03", y: 2}]
+        }],
+          chart: {
+          height: 400,
+          type: 'line',
+           zoom: {
+            enabled: false
+          }
+        },
+        plotOptions: {
+          line: {
+            dataLabels: {
+              position: 'bottom'
+            },
+          }
+        },
+        dataLabels: {
+          enabled: true,
+          offsetY: -10,
+          style: {
+            fontSize: '12px'
+            }
+        },
+        yaxis: {
+          axisBorder: {
+            show: false
+          },
+          axisTicks: {
+            show: false,
+          },
+          labels: {
+            show: false,
+            
+          }
+        },
+        title: {
+          text: 'Covid-19 Argentina, 2020',
+          floating: true,
+          offsetY: 10,
+          align: 'center',
+          style: {
+            color: '#000000'
+          }
+        }
+        };
+
+        var chart = new ApexCharts(document.querySelector("#chart"), options);
+        chart.render();
+    </script>
+</html>
