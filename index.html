@@ -248,7 +248,7 @@
       return returnValue;
     }
 
-    async function cargarGrafico(pais, fechaDesde, fechaHasta) {
+    async function cargarGrafico(pais,nombrePais, fechaDesde, fechaHasta) {
       let dataCasos = await cargarArrayDatos(
         pais,
         "confirmed",
@@ -268,11 +268,12 @@
         fechaHasta
       );
 
-      renderGrafico(pais, dataCasos, dataDecesos, dataRecuperados);
+      renderGrafico(nombrePais, dataCasos, dataDecesos, dataRecuperados);
     }
 
     window.onload = function () {
       let pais = "argentina"; //Default
+      let nombrePais = "argentina";
       const paisSelector = document.getElementById("paises");
       const fechaDesdeInput = document.getElementById("fechadesde");
       const fechaHastaInput = document.getElementById("fechahasta");
@@ -281,25 +282,27 @@
       cargarFechas(fechaDesdeInput, fechaHastaInput);
 
       //En el caso de que cambie, llevarlo a los cambios
-      let indicePais = paisSelector.selectedIndex;
+      let indicePais = paisSelector.selectedIndex;      
       if (indicePais >= 0) {
-        pais = paisSelector.options[indicePais].text;
+        pais = paisSelector.options[indicePais].value;
+        nombrePais = paisSelector.options[indicePais].text;
       }
 
       let fechaDesde = new Date(fechaDesdeInput.value).toISOString();
       let fechaHasta = new Date(fechaHastaInput.value).toISOString();
 
-      cargarGrafico(pais, fechaDesde, fechaHasta);
+      cargarGrafico(pais,nombrePais, fechaDesde, fechaHasta);
 
       //EventListeners
       paisSelector.addEventListener("change", function () {
         indicePais = paisSelector.selectedIndex;
         if (indicePais >= 0) {
-          pais = paisSelector.options[indicePais].text;
+          pais = paisSelector.options[indicePais].value;
+          nombrePais = paisSelector.options[indicePais].text;
         }
         fechaDesde = new Date(fechaDesdeInput.value).toISOString();
         fechaHasta = new Date(fechaHastaInput.value).toISOString();
-        cargarGrafico(pais, fechaDesde, fechaHasta);
+        cargarGrafico(pais,nombrePais, fechaDesde, fechaHasta);
       });
 
       let oldDateDesde = fechaDesdeInput.value;
@@ -319,7 +322,7 @@
           } else {
             fechaDesde = new Date(fechaDesdeInput.value).toISOString();
             fechaHasta = new Date(fechaHastaInput.value).toISOString();
-            cargarGrafico(pais, fechaDesde, fechaHasta);
+            cargarGrafico(pais, nombrePais, fechaDesde, fechaHasta);
           }
         }
       });
@@ -341,7 +344,7 @@
           } else {
             fechaDesde = new Date(fechaDesdeInput.value).toISOString();
             fechaHasta = new Date(fechaHastaInput.value).toISOString();
-            cargarGrafico(pais, fechaDesde, fechaHasta);
+            cargarGrafico(pais,nombrePais, fechaDesde, fechaHasta);
           }
         }
       });
