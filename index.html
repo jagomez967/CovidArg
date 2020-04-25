@@ -4,49 +4,7 @@
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
     <title>COVID-19</title>
     <meta name="viewport" content="width=device-width" />
-    <style>
-      body {
-        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-        background-color: #fffaf7;
-        line-height: 1.3;
-      }
-      main {
-        max-width: 90ch;
-        padding: 2ch;
-        margin: auto;
-      }
-      a {
-        color: #0072bb;
-        text-decoration: none;
-        outline: 0;
-      }
-      h1 {
-        margin-bottom: 0.5rem;
-        font-size: 3rem;
-        letter-spacing: 0.2rem;
-        text-align: center;
-        color: #0072bb;
-      }
-      footer {
-        margin-top: 2rem;
-        text-align: center;
-        font-size: 2rem;
-      }
-
-      footer p {
-        font-size: 1rem;
-        color: #888888;
-      }
-
-      .filter {
-        display: flex;
-        justify-content: space-between;
-      }
-
-      .align-left {
-        display: inline-block;
-        text-align: left;
-      }
+    <link rel="stylesheet" type="text/css" href="styles/main.css">     
     </style>
   </head>
   <body>
@@ -94,55 +52,23 @@
       </article>
     </main>
   </body>
-  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-  <script>
-    async function getAsyncData(url) {
-      let fetchData = await fetch(url, {
-        method: "Get",
-      });
-      return fetchData.json();
-    }
-
-    Date.prototype.addHours = function (h) {
-      this.setTime(this.getTime() + h * 60 * 60 * 1000);
-      return this;
-    };
-
-    function formatearFecha(fecha, separador) {
-      let date = new Date(fecha);
-      let d = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
-
-      let month = "" + (d.getMonth() + 1),
-        day = "" + d.getDate(),
-        year = d.getFullYear();
-
-      if (month.length < 2) month = "0" + month;
-      if (day.length < 2) day = "0" + day;
-
-      return [year, month, day].join(separador);
-    }
+  <script type="text/javascript" src="scripts/apexcharts.min.js"></script>
+  <script type="text/javascript" src="scripts/global.js"></script>
+  <script type="text/javascript" src="scripts/utils.js"></script>
+  <script>    
 
     async function cargarPaises(selectorPaises, paisInicial) {
       let listaPaises = await getAsyncData(
-        "https://api.covid19api.com/countries"
+        URLAPI.Countries
       );
 
       listaPaises
-        .sort((a, b) => {
-          if (a.Country > b.Country) {
-            return -1;
-          }
-          if (b.Country > a.Country) {
-            return 1;
-          }
-          return 0;
-        })
+        .sort((a, b) => sortAlphabetical(a.Country,b.Country))
         .reverse();
 
       listaPaises.forEach((pais) => {
         let paisElement = document.createElement("option");
-        paisElement.value = pais.Slug;
-        paisElement.innerHTML = pais.Country;
+        [paisElement.value, paisElement.innerHTML] = [pais.Slug, pais.Country];
         selectorPaises.appendChild(paisElement);
       });
 
@@ -154,13 +80,10 @@
     function cargarFechas(inputDesde, inputHasta) {
       let dateDesde = new Date();
       dateDesde.setDate(dateDesde.getDate() - 7);
-      inputDesde.value = formatearFecha(dateDesde, "-");
-      inputHasta.min = formatearFecha(dateDesde, "-");
+      inputDesde.value = inputHasta.min = formatDate(dateDesde, "-");      
 
-      let fechaHasta = formatearFecha(new Date(), "-");
-      inputHasta.value = fechaHasta;
-      inputDesde.max = fechaHasta;
-      inputHasta.max = fechaHasta;
+      let fechaHasta = formatDate(new Date(), "-");
+      inputHasta.value = inputDesde.max = inputHasta.max = fechaHasta;
     }
 
     function renderGrafico(pais, dataCasos, dataDecesos, dataRecuperados) {
@@ -182,15 +105,15 @@
         },
         series: [
           {
-            name: "Casos",
+            name: CASOS_LABEL,
             data: dataCasos,
           },
           {
-            name: "Decesos",
+            name: DECESOS_LABEL,
             data: dataDecesos,
           },
           {
-            name: "Recuperados",
+            name: RECUPERADOS_LABEL,
             data: dataRecuperados,
           },
         ],
@@ -241,28 +164,6 @@
       chart.render();
     }
 
-    function isDateBetween(date, minDate, maxDate) {
-      let dateHasta = new Date(maxDate);
-      let dHasta = new Date(
-        dateHasta.getTime() + dateHasta.getTimezoneOffset() * 60000
-      );
-      let dateDesde = new Date(minDate);
-      let dDesde = new Date(
-        dateDesde.getTime() + dateDesde.getTimezoneOffset() * 60000
-      );
-
-      let currentDate = new Date(date);
-      let dCurr = new Date(
-        currentDate.getTime() + currentDate.getTimezoneOffset() * 60000
-      );
-
-      if (dCurr >= dDesde && dHasta >= dCurr) {
-        return true;
-      } else {
-        return false;
-      }
-    }
-
     async function cargarArrayDatos(pais, tipo, fechaDesde, fechaHasta) {
       const url = `https://api.covid19api.com/total/country/${pais}/status/${tipo}`;
       let rawData = await getAsyncData(url);
@@ -271,14 +172,18 @@
         .filter((x) => isDateBetween(x.Date, fechaDesde, fechaHasta) === true)
         .map((x) => {
           const dayData = {};
-          dayData.x = formatearFecha(x.Date, "/");
+          dayData.x = formatDate(x.Date, "/");
           dayData.y = x.Cases;
           return dayData;
         });
       return returnValue;
     }
 
-    async function cargarGrafico(pais, nombrePais, fechaDesde, fechaHasta) {
+    async function cargarGrafico(pais, nombrePais, fechaDesdeRaw, fechaHastaRaw) {
+      
+      fechaDesde = new Date(fechaDesdeRaw).toISOString();
+      fechaHasta = new Date(fechaHastaRaw).toISOString();
+
       let dataCasos = await cargarArrayDatos(
         pais,
         "confirmed",
@@ -302,26 +207,15 @@
     }
 
     window.onload = function () {
-      let pais = "argentina"; //Default
-      let nombrePais = "argentina";
+      let pais = PAIS_DEFAULT; 
+      let nombrePais = PAIS_DEFAULT;
       const paisSelector = document.getElementById("paises");
       const fechaDesdeInput = document.getElementById("fechadesde");
       const fechaHastaInput = document.getElementById("fechahasta");
 
       cargarPaises(paisSelector, pais);
       cargarFechas(fechaDesdeInput, fechaHastaInput);
-
-      //En el caso de que cambie, llevarlo a los cambios
-      let indicePais = paisSelector.selectedIndex;
-      if (indicePais >= 0) {
-        pais = paisSelector.options[indicePais].value;
-        nombrePais = paisSelector.options[indicePais].text;
-      }
-
-      let fechaDesde = new Date(fechaDesdeInput.value).toISOString();
-      let fechaHasta = new Date(fechaHastaInput.value).toISOString();
-
-      cargarGrafico(pais, nombrePais, fechaDesde, fechaHasta);
+      cargarGrafico(pais, nombrePais, fechaDesdeInput.value, fechaHastaInput.value);
 
       //EventListeners
       paisSelector.addEventListener("change", function () {
@@ -330,9 +224,7 @@
           pais = paisSelector.options[indicePais].value;
           nombrePais = paisSelector.options[indicePais].text;
         }
-        fechaDesde = new Date(fechaDesdeInput.value).toISOString();
-        fechaHasta = new Date(fechaHastaInput.value).toISOString();
-        cargarGrafico(pais, nombrePais, fechaDesde, fechaHasta);
+        cargarGrafico(pais, nombrePais, fechaDesdeInput.value, fechaHastaInput.value);
       });
 
       let oldDateDesde = fechaDesdeInput.value;
@@ -350,9 +242,7 @@
             this.value = oldDateDesde;
             this.innerText = oldDateDesde;
           } else {
-            fechaDesde = new Date(fechaDesdeInput.value).toISOString();
-            fechaHasta = new Date(fechaHastaInput.value).toISOString();
-            cargarGrafico(pais, nombrePais, fechaDesde, fechaHasta);
+            cargarGrafico(pais, nombrePais, fechaDesdeInput.value, fechaHastaInput.value);
           }
         }
       });
@@ -372,9 +262,7 @@
             this.value = oldDateHasta;
             this.innerText = oldDateHasta;
           } else {
-            fechaDesde = new Date(fechaDesdeInput.value).toISOString();
-            fechaHasta = new Date(fechaHastaInput.value).toISOString();
-            cargarGrafico(pais, nombrePais, fechaDesde, fechaHasta);
+            cargarGrafico(pais, nombrePais, fechaDesdeInput.value, fechaHastaInput.value);
           }
         }
       });
