@@ -84,7 +84,8 @@
         <footer>
           <p>
             Información extraida de
-            <a href="https://documenter.getpostman.com/view/10808728/SzS8rjbc?version=latest"
+            <a
+              href="https://documenter.getpostman.com/view/10808728/SzS8rjbc?version=latest"
               >POSTMAN API Covid</a
             >
           </p>
@@ -109,8 +110,8 @@
 
     function formatearFecha(fecha, separador) {
       let date = new Date(fecha);
-      let d = new Date(date.getTime() + date.getTimezoneOffset() * 60000)
-   
+      let d = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+
       let month = "" + (d.getMonth() + 1),
         day = "" + d.getDate(),
         year = d.getFullYear();
@@ -120,7 +121,7 @@
 
       return [year, month, day].join(separador);
     }
-    
+
     async function cargarPaises(selectorPaises, paisInicial) {
       let listaPaises = await getAsyncData(
         "https://api.covid19api.com/countries"
@@ -240,15 +241,39 @@
       chart.render();
     }
 
+    function isDateBetween(date, minDate, maxDate) {
+      let dateHasta = new Date(maxDate);
+      let dHasta = new Date(
+        dateHasta.getTime() + dateHasta.getTimezoneOffset() * 60000
+      );
+      let dateDesde = new Date(minDate);
+      let dDesde = new Date(
+        dateDesde.getTime() + dateDesde.getTimezoneOffset() * 60000
+      );
+
+      let currentDate = new Date(date);
+      let dCurr = new Date(
+        currentDate.getTime() + currentDate.getTimezoneOffset() * 60000
+      );
+
+      if (dCurr >= dDesde && dHasta >= dCurr) {
+        console.log("true");
+        return true;
+      } else {
+        console.log("false");
+        return false;
+      }
+    }
+
     async function cargarArrayDatos(pais, tipo, fechaDesde, fechaHasta) {
       const url = `https://api.covid19api.com/total/country/${pais}/status/${tipo}`;
       let rawData = await getAsyncData(url);
-      
+
       let returnValue = rawData
-        .filter((x) => x.Date >= fechaDesde && x.Date <= fechaHasta)
+        .filter((x) => isDateBetween(x.Date, fechaDesde, fechaHasta) === true)
         .map((x) => {
-          const dayData = {};      
-          dayData.x = formatearFecha(x.Date, "/");      
+          const dayData = {};
+          dayData.x = formatearFecha(x.Date, "/");
           dayData.y = x.Cases;
           return dayData;
         });
