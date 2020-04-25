@@ -1,4 +1,4 @@
-let rawDataCached = null;
+let rawDataCached = {};
 
     async function cargarPaises(selectorPaises, paisInicial) {
       let listaPaises = await getAsyncData(
@@ -111,11 +111,11 @@ let rawDataCached = null;
       const url = `https://api.covid19api.com/total/country/${pais}/status/${tipo}`;
       let rawData; 
       
-      if (isCached == false || rawDataCached == null){
+      if (isCached == false || rawDataCached.hasOwnProperty(tipo) === false){
         rawData = await getAsyncData(url);
-        rawDataCached = rawData;
+        rawDataCached[tipo] = rawData;
       }else{
-        rawData = rawDataCached;
+        rawData = rawDataCached[tipo];
       }
 
       let returnValue = rawData
