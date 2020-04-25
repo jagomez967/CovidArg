@@ -1,206 +1,350 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-            <title>COVID-19 ARG</title>
-        <meta name="viewport" content="width=device-width">
-        <style>
-        body {
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            background-color: #fffaf7;
-            line-height: 1.3;
-        }
-        main {
-            max-width: 90ch;
-            padding: 2ch;
-            margin: auto;
-        }
-        a {
-          color: #0072BB;
-          text-decoration: none;
-          outline: 0;
-        }
-        h1 {
-            margin-bottom: .5rem;
-            font-size: 3rem;
-            letter-spacing: 0.2rem;
-            text-align:center;
-            color: #0072BB;
-        }
-        footer {
-            margin-top: 2rem;
-            text-align: center;
-            font-size: 2rem;
-        } 
-        
-        footer p{
-            font-size: 1rem;
-            color: #888888;
-        }
-        </style>
-    </head>
-    <body>
-        <main>
-            <article>
-                <header>
-                    <h1>Covid-19 ARG</h1>
-                    <p>Ultima Actualización: <time datetime="20200411">11/04/2020</time></p>
-                </header>
-                <body>
-                    <div id='chart'></div>
-                    <hr/>
-                </body>
-                <footer>
-                <p>Información extraida del <a href="https://www.argentina.gob.ar/coronavirus/informe-diario">Ministerio de Salud de la Nación</a></p>
-                    🦠
-                </footer>
-            </article>
-        </main>
-    </body>
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-    <script>
-        var options = {
-        colors:['#FC5D19', '#FF0000'],
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <title>COVID-19</title>
+    <meta name="viewport" content="width=device-width" />
+    <style>
+      body {
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        background-color: #fffaf7;
+        line-height: 1.3;
+      }
+      main {
+        max-width: 90ch;
+        padding: 2ch;
+        margin: auto;
+      }
+      a {
+        color: #0072bb;
+        text-decoration: none;
+        outline: 0;
+      }
+      h1 {
+        margin-bottom: 0.5rem;
+        font-size: 3rem;
+        letter-spacing: 0.2rem;
+        text-align: center;
+        color: #0072bb;
+      }
+      footer {
+        margin-top: 2rem;
+        text-align: center;
+        font-size: 2rem;
+      }
+
+      footer p {
+        font-size: 1rem;
+        color: #888888;
+      }
+
+      .filter {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .align-left {
+        display: inline-block;
+        text-align: left;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <article>
+        <header>
+          <h1>Covid-19 ARG</h1>
+        </header>
+        <body>
+          <div class="filter">
+            <div id="datefilter">
+              <label for="desde">Desde:</label>
+              <input
+                type="date"
+                id="fechadesde"
+                value="2017-06-01"
+                name="desde"
+              />
+              <label for="hasta">Hasta:</label>
+              <input
+                type="date"
+                id="fechahasta"
+                value="2014-02-06"
+                name="hasta"
+              />
+            </div>
+            <div id="countryfilter">
+              <select id="paises"> </select>
+            </div>
+          </div>
+          <div id="chart"></div>
+
+          <hr />
+        </body>
+        <footer>
+          <p>
+            Información extraida del
+            <a href="https://www.argentina.gob.ar/coronavirus/informe-diario"
+              >Ministerio de Salud de la Nación</a
+            >
+          </p>
+          🦠
+        </footer>
+      </article>
+    </main>
+  </body>
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <script>
+    async function getAsyncData(url) {
+      let fetchData = await fetch(url, {
+        method: "Get",
+      });
+      return fetchData.json();
+    }
+
+    function formatearFecha(fecha, separador) {
+      let d = new Date(fecha),
+        month = "" + (d.getMonth() + 1),
+        day = "" + d.getDate(),
+        year = d.getFullYear();
+
+      if (month.length < 2) month = "0" + month;
+      if (day.length < 2) day = "0" + day;
+
+      return [year, month, day].join(separador);
+    }
+
+    async function cargarPaises(selectorPaises, paisInicial) {
+      let listaPaises = await getAsyncData(
+        "https://api.covid19api.com/countries"
+      );
+
+      listaPaises
+        .sort((a, b) => {
+          if (a.Country > b.Country) {
+            return -1;
+          }
+          if (b.Country > a.Country) {
+            return 1;
+          }
+          return 0;
+        })
+        .reverse();
+
+      listaPaises.forEach((pais) => {
+        let paisElement = document.createElement("option");
+        paisElement.value = pais.Slug;
+        paisElement.innerHTML = pais.Country;
+        selectorPaises.appendChild(paisElement);
+      });
+
+      if (paisInicial) {
+        selectorPaises.value = paisInicial;
+      }
+    }
+
+    function cargarFechas(inputDesde, inputHasta) {
+      let dateDesde = new Date();
+      dateDesde.setDate(dateDesde.getDate() - 7);
+      inputDesde.value = formatearFecha(dateDesde, "-");
+      inputHasta.min = formatearFecha(dateDesde, "-");
+
+      let fechaHasta = formatearFecha(new Date(), "-");
+      inputHasta.value = fechaHasta;
+      inputDesde.max = fechaHasta;
+      inputHasta.max = fechaHasta;
+    }
+
+    function renderGrafico(pais, dataCasos, dataDecesos, dataRecuperados) {
+      document.querySelector("#chart").innerHTML= "";
+
+      var options = {
+        colors: ["#FC5D19", "#FF0000", "#00DD00"],
         xaxis: {
-          position: 'bottom',
+          position: "bottom",
           axisBorder: {
-            show: false
+            show: false,
           },
           axisTicks: {
-            show: false
+            show: false,
           },
           tooltip: {
             enabled: true,
-          }
+          },
         },
-          series: [{
-          name: 'Casos',
-          data: [
-        {x: "05/03", y: 1},
-        {x: "06/03", y: 2},
-        {x: "08/03", y: 12},
-        {x: "09/03", y: 17},
-        {x: "10/03", y: 19},
-        {x: "11/03", y: 21},
-        {x: "12/03", y: 31},
-        {x: "13/03", y: 34},
-        {x: "14/03", y: 45},
-        {x: "15/03", y: 56},
-        {x: "16/03", y: 65},
-        {x: "17/03", y: 79},
-        {x: "18/03", y: 97},
-        {x: "19/03", y: 128},
-        {x: "20/03", y: 158},
-        {x: "21/03", y: 225},
-        {x: "22/03", y: 266},
-        {x: "23/03", y: 301},
-        {x: "24/03", y: 387},
-        {x: "25/03", y: 502},
-        {x: "26/03", y: 589},
-        {x: "27/03", y: 690},
-        {x: "28/03", y: 745},
-        {x: "29/03", y: 820},
-        {x: "30/03", y: 966},
-        {x: "31/03", y: 1054},
-        {x: "01/04", y: 1133},
-        {x: "02/04", y: 1265},
-        {x: "03/04", y: 1353},
-        {x: "04/04", y: 1451},
-        {x: "05/04", y: 1554},
-        {x: "06/04", y: 1628},
-        {x: "07/04", y: 1715},
-        {x: "08/04", y: 1795},
-        {x: "09/04", y: 1894},
-        {x: "10/04", y: 1975},
-        {x: "11/04", y: 2142}
+        series: [
+          {
+            name: "Casos",
+            data: dataCasos,
+          },
+          {
+            name: "Decesos",
+            data: dataDecesos,
+          },
+          {
+            name: "Recuperados",
+            data: dataRecuperados,
+          },
         ],
-
-        },{name: 'Decesos',
-          data: [
-        {x: "05/03", y: 0},
-        {x: "06/03", y: 0},
-        {x: "08/03", y: 0},
-        {x: "09/03", y: 1},
-        {x: "10/03", y: 1},
-        {x: "11/03", y: 1},
-        {x: "12/03", y: 1},
-        {x: "13/03", y: 2},
-        {x: "14/03", y: 2},
-        {x: "15/03", y: 2},
-        {x: "16/03", y: 2},
-        {x: "17/03", y: 2},
-        {x: "18/03", y: 2},
-        {x: "19/03", y: 3},
-        {x: "20/03", y: 3},
-        {x: "21/03", y: 4},
-        {x: "22/03", y: 4},
-        {x: "23/03", y: 4},
-        {x: "24/03", y: 6},
-        {x: "25/03", y: 8},
-        {x: "26/03", y: 12},
-        {x: "27/03", y: 17},
-        {x: "28/03", y: 19},
-        {x: "29/03", y: 20},
-        {x: "30/03", y: 24},
-        {x: "31/03", y: 27},
-        {x: "01/04", y: 31},
-        {x: "02/04", y: 36},
-        {x: "03/04", y: 42},
-        {x: "04/04", y: 43},
-        {x: "05/04", y: 46},
-        {x: "06/04", y: 53},
-        {x: "07/04", y: 60},
-        {x: "08/04", y: 65},
-        {x: "09/04", y: 79},
-        {x: "10/04", y: 82},
-        {x: "11/04", y: 89}
-        ]
-        }],
-          chart: {
+        chart: {
           height: 400,
-          type: 'line',
-           zoom: {
-            enabled: false
-          }
+          type: "line",
+          zoom: {
+            enabled: false,
+          },
         },
         plotOptions: {
           line: {
             dataLabels: {
-              position: 'bottom'
+              position: "bottom",
             },
-          }
+          },
         },
         dataLabels: {
           enabled: true,
           offsetY: -10,
           style: {
-            fontSize: '12px'
-            }
+            fontSize: "12px",
+          },
         },
         yaxis: {
           axisBorder: {
-            show: false
+            show: false,
           },
           axisTicks: {
             show: false,
           },
           labels: {
             show: false,
-            
-          }
+          },
         },
         title: {
-          text: 'Covid-19 Argentina, 2020',
+          text: `Covid-19 ${pais}, 2020`,
           floating: true,
           offsetY: 10,
-          align: 'center',
+          align: "center",
           style: {
-            color: '#000000'
+            color: "#000000",
+          },
+        },
+      };
+
+      var chart = new ApexCharts(document.querySelector("#chart"), options);
+      chart.render();
+    }
+
+    async function cargarArrayDatos(pais, tipo, fechaDesde, fechaHasta) {
+      const url = `https://api.covid19api.com/total/country/${pais}/status/${tipo}`;
+      let rawData = await getAsyncData(url);
+
+      let returnValue = rawData
+        .filter((x) => x.Date >= fechaDesde && x.Date <= fechaHasta)
+        .map((x) => {
+          const dayData = {};
+          dayData.x = formatearFecha(x.Date, "/");
+          dayData.y = x.Cases;
+          return dayData;
+        });
+      return returnValue;
+    }
+
+    async function cargarGrafico(pais, fechaDesde, fechaHasta) {
+      let dataCasos = await cargarArrayDatos(
+        pais,
+        "confirmed",
+        fechaDesde,
+        fechaHasta
+      );
+      let dataRecuperados = await cargarArrayDatos(
+        pais,
+        "recovered",
+        fechaDesde,
+        fechaHasta
+      );
+      let dataDecesos = await cargarArrayDatos(
+        pais,
+        "deaths",
+        fechaDesde,
+        fechaHasta
+      );
+
+      renderGrafico(pais, dataCasos, dataDecesos, dataRecuperados);
+    }
+
+    window.onload = function () {
+      let pais = "argentina"; //Default
+      const paisSelector = document.getElementById("paises");
+      const fechaDesdeInput = document.getElementById("fechadesde");
+      const fechaHastaInput = document.getElementById("fechahasta");
+
+      cargarPaises(paisSelector, pais);
+      cargarFechas(fechaDesdeInput, fechaHastaInput);
+
+      //En el caso de que cambie, llevarlo a los cambios
+      let indicePais = paisSelector.selectedIndex;
+      if (indicePais >= 0) {
+        pais = paisSelector.options[indicePais].text;
+      }
+
+      let fechaDesde = new Date(fechaDesdeInput.value).toISOString();
+      let fechaHasta = new Date(fechaHastaInput.value).toISOString();
+
+      cargarGrafico(pais, fechaDesde, fechaHasta);
+
+      //EventListeners
+      paisSelector.addEventListener("change", function () {
+        indicePais = paisSelector.selectedIndex;
+        if (indicePais >= 0) {
+          pais = paisSelector.options[indicePais].text;
+        }
+        fechaDesde = new Date(fechaDesdeInput.value).toISOString();
+        fechaHasta = new Date(fechaHastaInput.value).toISOString();
+        cargarGrafico(pais, fechaDesde, fechaHasta);
+      });
+
+      let oldDateDesde = fechaDesdeInput.value;
+      let isChangedDesde = function () {
+        if (fechaDesdeInput.value !== oldDateDesde) {
+          oldDateDesde = fechaDesdeInput.value;
+          fechaHastaInput.min = fechaDesdeInput.value;
+          return true;
+        }
+        return false;
+      };
+      fechaDesdeInput.addEventListener("change", function () {
+        if (isChangedDesde()) {
+          if (new Date(this.value) > new Date(fechaHastaInput.value)) {
+            this.value = oldDateDesde;
+            this.innerText = oldDateDesde;
+          } else {
+            fechaDesde = new Date(fechaDesdeInput.value).toISOString();
+            fechaHasta = new Date(fechaHastaInput.value).toISOString();
+            cargarGrafico(pais, fechaDesde, fechaHasta);
           }
         }
-        };
+      });
 
-        var chart = new ApexCharts(document.querySelector("#chart"), options);
-        chart.render();
-    </script>
+      let olddateHasta = fechaHastaInput.value;
+      let isChangedHasta = function () {
+        if (fechaHastaInput.value !== olddateHasta) {
+          olddateHasta = fechaHastaInput.value;
+          fechaDesdeInput.max = fechaHastaInput.value;
+          return true;
+        }
+        return false;
+      };
+      fechaHastaInput.addEventListener("change", function () {
+        if (isChangedHasta()) {
+          if (new Date(this.value) < new Date(fechaDesdeInput.value)) {
+            this.value = oldDateHasta;
+            this.innerText = oldDateHasta;
+          } else {
+            fechaDesde = new Date(fechaDesdeInput.value).toISOString();
+            fechaHasta = new Date(fechaHastaInput.value).toISOString();
+            cargarGrafico(pais, fechaDesde, fechaHasta);
+          }
+        }
+      });
+    };
+  </script>
 </html>
