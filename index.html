@@ -56,6 +56,7 @@
   <script type="text/javascript" src="scripts/global.js"></script>
   <script type="text/javascript" src="scripts/utils.js"></script>
   <script>    
+    let rawDataCached = null;
 
     async function cargarPaises(selectorPaises, paisInicial) {
       let listaPaises = await getAsyncData(
@@ -164,9 +165,16 @@
       chart.render();
     }
 
-    async function cargarArrayDatos(pais, tipo, fechaDesde, fechaHasta) {
+    async function cargarArrayDatos(pais, tipo, fechaDesde, fechaHasta,isCached) {
       const url = `https://api.covid19api.com/total/country/${pais}/status/${tipo}`;
-      let rawData = await getAsyncData(url);
+      let rawData; 
+      
+      if (isCached == false || rawDataCached == null){
+        rawData = await getAsyncData(url);
+        rawDataCached = rawData;
+      }else{
+        rawData = rawDataCached;
+      }
 
       let returnValue = rawData
         .filter((x) => isDateBetween(x.Date, fechaDesde, fechaHasta) === true)
@@ -179,7 +187,7 @@
       return returnValue;
     }
 
-    async function cargarGrafico(pais, nombrePais, fechaDesdeRaw, fechaHastaRaw) {
+    async function cargarGrafico(pais, nombrePais, fechaDesdeRaw, fechaHastaRaw,isCached = false) {
       
       fechaDesde = new Date(fechaDesdeRaw).toISOString();
       fechaHasta = new Date(fechaHastaRaw).toISOString();
@@ -188,19 +196,22 @@
         pais,
         "confirmed",
         fechaDesde,
-        fechaHasta
+        fechaHasta,
+        isCached
       );
       let dataRecuperados = await cargarArrayDatos(
         pais,
         "recovered",
         fechaDesde,
-        fechaHasta
+        fechaHasta,
+        isCached
       );
       let dataDecesos = await cargarArrayDatos(
         pais,
         "deaths",
         fechaDesde,
-        fechaHasta
+        fechaHasta,
+        isCached
       );
 
       renderGrafico(nombrePais, dataCasos, dataDecesos, dataRecuperados);
@@ -242,7 +253,7 @@
             this.value = oldDateDesde;
             this.innerText = oldDateDesde;
           } else {
-            cargarGrafico(pais, nombrePais, fechaDesdeInput.value, fechaHastaInput.value);
+            cargarGrafico(pais, nombrePais, fechaDesdeInput.value, fechaHastaInput.value,isCached = true);
           }
         }
       });
@@ -262,7 +273,7 @@
             this.value = oldDateHasta;
             this.innerText = oldDateHasta;
           } else {
-            cargarGrafico(pais, nombrePais, fechaDesdeInput.value, fechaHastaInput.value);
+            cargarGrafico(pais, nombrePais, fechaDesdeInput.value, fechaHastaInput.value,isCached = true);
           }
         }
       });
