@@ -171,7 +171,7 @@ window.onload = function () {
         this.value = oldDateDesde;
         this.innerText = oldDateDesde;
       } else {
-        cargarGrafico(pais, nombrePais, fechaDesdeInput.value, fechaHastaInput.value, isCached = true);
+        cargarGrafico(pais, nombrePais, fechaDesdeInput.value, fechaHastaInput.value, true);
       }
     }
   });
@@ -191,7 +191,7 @@ window.onload = function () {
         this.value = oldDateHasta;
         this.innerText = oldDateHasta;
       } else {
-        cargarGrafico(pais, nombrePais, fechaDesdeInput.value, fechaHastaInput.value, isCached = true);
+        cargarGrafico(pais, nombrePais, fechaDesdeInput.value, fechaHastaInput.value, true);
       }
     }
   });
