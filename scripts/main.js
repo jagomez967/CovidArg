@@ -148,7 +148,7 @@ window.onload = function () {
 
   //EventListeners
   paisSelector.addEventListener("change", function () {
-    let indicePaisindicePais = paisSelector.selectedIndex;
+    let indicePais = paisSelector.selectedIndex;
     if (indicePais >= 0) {
       pais = paisSelector.options[indicePais].value;
       nombrePais = paisSelector.options[indicePais].text;
