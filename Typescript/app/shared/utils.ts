@@ -1,21 +1,9 @@
-"use strict";
-
-export async function getAsyncData(url) {
+export async function getAsyncData(url:string) {
   let fetchData = await fetch(url, {
     method: "Get",
     cache: "force-cache"
   });
   return fetchData.json();
-}
-
-/*Date.prototype.addHours = function (h) {
-  this.setTime(this.getTime() + h * 60 * 60 * 1000);
-  return this;
-};*/
-
-function dateToUtc(fecha) {
-  let date = new Date(fecha);
-  return new Date(date.getTime() + date.getTimezoneOffset() * 60000);
 }
 
 export function isDateBetween(currentDate, minDate, maxDate) {
@@ -26,7 +14,7 @@ export function isDateBetween(currentDate, minDate, maxDate) {
   return dCurr >= dDesde && dHasta >= dCurr;
 }
 
-export function sortAlphabetical(a, b) {
+export function sortAlphabetical(a:string, b:string) {
   if (a > b) {
     return -1;
   }
@@ -36,8 +24,13 @@ export function sortAlphabetical(a, b) {
   return 0;
 }
 
-export function formatDate(fecha, separador) {
-  let d = dateToUtc(fecha);
+function dateToUtc(fecha:string): Date{
+  let date: Date = new Date(fecha);
+  return new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+}
+
+export function formatDate(fecha:string , separador:string): string {
+  let d: Date = dateToUtc(fecha);
 
   let month = "" + (d.getMonth() + 1),
     day = "" + d.getDate(),
