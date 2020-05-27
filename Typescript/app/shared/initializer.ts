@@ -1,14 +1,16 @@
 import {URLAPI} from '../global.js';
 import {formatDate,sortAlphabetical,getAsyncData} from './utils.js';
+import {Country} from '../domain/country.js';
 
-interface ICountry{
+interface ICountryRest{
   Country: string;
   Slug: string;
   ISO2: string;
 }
 
-export async function cargarPaises(selectorPaises:HTMLSelectElement, paisInicial:string): Promise<void> {
-    let listaPaises: Array<ICountry>= await getAsyncData(URLAPI.Countries);
+export async function cargarPaises(selectorPaises:HTMLSelectElement): Promise<void> {
+    let cCountry = Country.getInstance();    
+    let listaPaises: Array<ICountryRest>= await getAsyncData(URLAPI.Countries);
 
     listaPaises
       .sort((a, b) => sortAlphabetical(a.Country,b.Country))
@@ -20,8 +22,8 @@ export async function cargarPaises(selectorPaises:HTMLSelectElement, paisInicial
       selectorPaises.appendChild(paisElement);
     });
 
-    if (paisInicial) {
-      selectorPaises.value = paisInicial;
+    if (cCountry.code) {
+      selectorPaises.value = cCountry.code;
     }
   }
   

@@ -1,7 +1,7 @@
-export async function getAsyncData(url) {
+export async function getAsyncData(url, cached = true) {
     let fetchData = await fetch(url, {
         method: "Get",
-        cache: "force-cache"
+        cache: cached === true ? "force-cache" : "default",
     });
     return fetchData.json();
 }

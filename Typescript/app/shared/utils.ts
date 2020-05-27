@@ -1,15 +1,15 @@
-export async function getAsyncData(url:string) {
+export async function getAsyncData(url:string, cached: boolean = true) {
   let fetchData = await fetch(url, {
     method: "Get",
-    cache: "force-cache"
+    cache: cached === true ? "force-cache":"default",
   });
   return fetchData.json();
 }
 
-export function isDateBetween(currentDate, minDate, maxDate) {
-  let dHasta = dateToUtc(maxDate);
-  let dDesde = dateToUtc(minDate);
-  let dCurr = dateToUtc(currentDate);
+export function isDateBetween(currentDate: string, minDate: string, maxDate: string): boolean {
+  let dHasta: Date = dateToUtc(maxDate);
+  let dDesde: Date = dateToUtc(minDate);
+  let dCurr: Date = dateToUtc(currentDate);
 
   return dCurr >= dDesde && dHasta >= dCurr;
 }

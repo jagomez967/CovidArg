@@ -1,5 +1,8 @@
 import {CountryApi} from '../global.js';
 import {getAsyncData,isDateBetween,formatDate} from '../shared/utils.js';
+import {renderGrafico} from './graph-render.js';
+import { getDOMFromDate, getDOMToDate } from './dom-loader.js';
+import { Country } from '../domain/country.js';
 
 interface IDayData {
     x: string;
@@ -37,3 +40,39 @@ export async function cargarArrayDatos(pais: string, tipo: string, fechaDesde: s
     return returnValue;
   }
   
+
+  export async function cargarGrafico(isCached = false): Promise<void> {
+    let cCountry = Country.getInstance();
+    let pais: string = cCountry;
+    let nombrePais: string = cCountry;
+    const fechaDesdeRaw = getDOMFromDate().value;
+    const fechaHastaRaw = getDOMToDate().value;
+    
+    let fechaDesde = new Date(fechaDesdeRaw).toISOString();
+    let fechaHasta = new Date(fechaHastaRaw).toISOString();
+  
+    let dataCasos = await cargarArrayDatos(
+      pais,
+      "confirmed",
+      fechaDesde,
+      fechaHasta,
+      isCached
+    );
+    let dataRecuperados = await cargarArrayDatos(
+      pais,
+      "recovered",
+      fechaDesde,
+      fechaHasta,
+      isCached
+    );
+    let dataDecesos = await cargarArrayDatos(
+      pais,
+      "deaths",
+      fechaDesde,
+      fechaHasta,
+      isCached
+    );
+  
+    let ChartHtml:Element = document.querySelector("#chart");
+    renderGrafico(nombrePais, dataCasos, dataDecesos, dataRecuperados,ChartHtml);
+  }
