@@ -8,3 +8,6 @@ export function getDOMFromDate() : HTMLInputElement{
 export function getDOMToDate() : HTMLInputElement{
     return <HTMLInputElement>document.getElementById("fechahasta");
 }
+export function getDOMChart() : Element{
+    return <Element>document.querySelector("#chart");
+}

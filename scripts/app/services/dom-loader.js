@@ -7,3 +7,6 @@ export function getDOMFromDate() {
 export function getDOMToDate() {
     return document.getElementById("fechahasta");
 }
+export function getDOMChart() {
+    return document.querySelector("#chart");
+}

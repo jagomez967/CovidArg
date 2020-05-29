@@ -1,6 +1,10 @@
 import {CASOS_LABEL, DECESOS_LABEL, RECUPERADOS_LABEL} from '../global.js';
+import {Country} from '../domain/country.js';
+import {getDOMChart} from '../services/dom-loader.js';
 
-export function renderGrafico(pais:string, dataCasos, dataDecesos, dataRecuperados,ChartHtml: Element) {  
+export function renderGraph(dataCasos, dataDecesos, dataRecuperados) {  
+    const cCountry = Country.getInstance();
+    const ChartHtml = getDOMChart();
     ChartHtml.innerHTML = "";
   
     var options = {
@@ -64,7 +68,7 @@ export function renderGrafico(pais:string, dataCasos, dataDecesos, dataRecuperad
         },
       },
       title: {
-        text: `Covid-19 ${pais}, 2020`,
+        text: `Covid-19 ${cCountry.name}, 2020`,
         floating: true,
         offsetY: 10,
         align: "center",
@@ -74,6 +78,6 @@ export function renderGrafico(pais:string, dataCasos, dataDecesos, dataRecuperad
       },
     };
   
-    var chart = new ApexCharts(document.querySelector("#chart"), options);
+    const chart = new ApexCharts(ChartHtml, options);
     chart.render();
   }

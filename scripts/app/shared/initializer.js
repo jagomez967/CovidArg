@@ -1,6 +1,8 @@
 import { URLAPI } from '../global.js';
 import { formatDate, sortAlphabetical, getAsyncData } from './utils.js';
-export async function cargarPaises(selectorPaises, paisInicial) {
+import { Country } from '../domain/country.js';
+export async function initCountry(selectorPaises) {
+    let cCountry = Country.getInstance();
     let listaPaises = await getAsyncData(URLAPI.Countries);
     listaPaises
         .sort((a, b) => sortAlphabetical(a.Country, b.Country))
@@ -10,11 +12,11 @@ export async function cargarPaises(selectorPaises, paisInicial) {
         [paisElement.value, paisElement.innerHTML] = [pais.Slug, pais.Country];
         selectorPaises.appendChild(paisElement);
     });
-    if (paisInicial) {
-        selectorPaises.value = paisInicial;
+    if (cCountry.code) {
+        selectorPaises.value = cCountry.code;
     }
 }
-export function cargarFechas(inputDesde, inputHasta) {
+export function initDates(inputDesde, inputHasta) {
     let dateDesde = new Date();
     dateDesde.setDate(dateDesde.getDate() - 7);
     inputDesde.value = inputHasta.min = formatDate(dateDesde.toString(), "-");

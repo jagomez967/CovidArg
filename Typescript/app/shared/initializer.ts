@@ -2,13 +2,14 @@ import {URLAPI} from '../global.js';
 import {formatDate,sortAlphabetical,getAsyncData} from './utils.js';
 import {Country} from '../domain/country.js';
 
+
 interface ICountryRest{
   Country: string;
   Slug: string;
-  ISO2: string;
 }
 
-export async function cargarPaises(selectorPaises:HTMLSelectElement): Promise<void> {
+export async function initCountry(selectorPaises:HTMLSelectElement): Promise<void> {
+    
     let cCountry = Country.getInstance();    
     let listaPaises: Array<ICountryRest>= await getAsyncData(URLAPI.Countries);
 
@@ -27,7 +28,7 @@ export async function cargarPaises(selectorPaises:HTMLSelectElement): Promise<vo
     }
   }
   
-  export function cargarFechas(inputDesde: HTMLInputElement, inputHasta:HTMLInputElement):void {
+  export function initDates(inputDesde: HTMLInputElement, inputHasta:HTMLInputElement):void {
     let dateDesde: Date = new Date();
     dateDesde.setDate(dateDesde.getDate() - 7);
     inputDesde.value = inputHasta.min = formatDate(dateDesde.toString(), "-");      

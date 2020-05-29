@@ -1,7 +1,7 @@
 import {CountryApi} from '../global.js';
-import {getAsyncData,isDateBetween,formatDate} from '../shared/utils.js';
-import {renderGrafico} from './graph-render.js';
-import { getDOMFromDate, getDOMToDate } from './dom-loader.js';
+import { getAsyncData,isDateBetween,formatDate} from '../shared/utils.js';
+import { renderGraph} from './graph-render.js';
+import { getDOMFromDate, getDOMToDate, getDOMChart } from './dom-loader.js';
 import { Country } from '../domain/country.js';
 
 interface IDayData {
@@ -18,10 +18,16 @@ interface ICountryStats{
     Date: string;
 }
 
+
+//Esto es una verga, cambiar a cache en localstorage o algo mejor.
 let rawDataCached = {};
 
-export async function cargarArrayDatos(pais: string, tipo: string, fechaDesde: string, fechaHasta: string, isCached: boolean): Promise<IDayData[]> {
-    const url: string = CountryApi(pais,tipo);
+export async function loadArray(tipo: string, isCached: boolean = false): Promise<IDayData[]> {
+  const cCountry = Country.getInstance();  
+  const fromDate: string = new Date(getDOMFromDate().value).toISOString();
+  const toDate: string = new Date(getDOMToDate().value).toISOString();
+  const url: string = CountryApi(cCountry.code,tipo);
+
     let rawData:Array<ICountryStats>;
   
     if (isCached === false || rawDataCached.hasOwnProperty(tipo) === false) {
@@ -32,47 +38,17 @@ export async function cargarArrayDatos(pais: string, tipo: string, fechaDesde: s
     }
   
     let returnValue = rawData
-      .filter((x) => isDateBetween(x.Date, fechaDesde, fechaHasta) === true)
+      .filter((x) => isDateBetween(x.Date, fromDate, toDate) === true)
       .map((x) => {
         const dayData :IDayData = {x: formatDate(x.Date, "/"), y: x.Cases};
         return dayData;
       });
     return returnValue;
   }
-  
+  export async function loadGraph(isCached = false): Promise<void> {
+    const Confirmed = await loadArray('confirmed',isCached);
+    const Deaths = await loadArray('deaths',isCached);
+    const Recovered = await loadArray('recovered',isCached);
 
-  export async function cargarGrafico(isCached = false): Promise<void> {
-    let cCountry = Country.getInstance();
-    let pais: string = cCountry;
-    let nombrePais: string = cCountry;
-    const fechaDesdeRaw = getDOMFromDate().value;
-    const fechaHastaRaw = getDOMToDate().value;
-    
-    let fechaDesde = new Date(fechaDesdeRaw).toISOString();
-    let fechaHasta = new Date(fechaHastaRaw).toISOString();
-  
-    let dataCasos = await cargarArrayDatos(
-      pais,
-      "confirmed",
-      fechaDesde,
-      fechaHasta,
-      isCached
-    );
-    let dataRecuperados = await cargarArrayDatos(
-      pais,
-      "recovered",
-      fechaDesde,
-      fechaHasta,
-      isCached
-    );
-    let dataDecesos = await cargarArrayDatos(
-      pais,
-      "deaths",
-      fechaDesde,
-      fechaHasta,
-      isCached
-    );
-  
-    let ChartHtml:Element = document.querySelector("#chart");
-    renderGrafico(nombrePais, dataCasos, dataDecesos, dataRecuperados,ChartHtml);
+    renderGraph(Confirmed,Deaths,Recovered);
   }
