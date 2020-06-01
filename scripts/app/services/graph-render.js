@@ -34,6 +34,7 @@ export function renderGraph(dataCasos, dataDecesos, dataRecuperados) {
             },
         ],
         chart: {
+            height: 400,
             type: "line",
             zoom: {
                 enabled: false,

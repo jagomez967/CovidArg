@@ -30,7 +30,7 @@ export async function initCountry(selectorPaises:HTMLSelectElement): Promise<voi
   
   export function initDates(inputDesde: HTMLInputElement, inputHasta:HTMLInputElement):void {
     let dateDesde: Date = new Date();
-    dateDesde.setDate(dateDesde.getDate() - 7);
+    dateDesde.setDate(dateDesde.getDate() - 14);
     inputDesde.value = inputHasta.min = formatDate(dateDesde.toString(), "-");      
 
     let fechaHasta: string = formatDate(new Date().toString(), "-");

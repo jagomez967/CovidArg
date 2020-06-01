@@ -18,7 +18,7 @@ export async function initCountry(selectorPaises) {
 }
 export function initDates(inputDesde, inputHasta) {
     let dateDesde = new Date();
-    dateDesde.setDate(dateDesde.getDate() - 7);
+    dateDesde.setDate(dateDesde.getDate() - 14);
     inputDesde.value = inputHasta.min = formatDate(dateDesde.toString(), "-");
     let fechaHasta = formatDate(new Date().toString(), "-");
     inputHasta.value = inputDesde.max = inputHasta.max = fechaHasta;
